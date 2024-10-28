@@ -120,7 +120,8 @@ usageServiceCommands () {
   fi
 
   # show title
-  echo; helpify_subcommand_title "gdrcd-stack ${service}" "" "[OPTIONS...] COMMAND [OPTIONS...]";
+  local command_name="$(basename "${0}")"
+  echo; helpify_subcommand_title "${command_name} ${service}" "" "[OPTIONS...] COMMAND [OPTIONS...]";
 
   # scan bin sub-directories for commands
   for command in "${serviceDir}"/*; do
