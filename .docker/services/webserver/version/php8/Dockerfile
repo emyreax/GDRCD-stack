@@ -56,16 +56,6 @@ RUN echo "Install PHP Intl" \
     && docker-php-ext-enable intl \
     && rm -rf /tmp/*
 
-# Install xdebug
-RUN echo "Install xDebug" \
-    && pecl install xdebug-3.1.5 \
-    && docker-php-ext-enable xdebug
-
-# Install redis
-RUN echo "Install Redis" \
-    && pecl install redis-5.3.4 \
-    && docker-php-ext-enable redis
-
 # Install sendmailer for Mailhog
 RUN  curl --location --output /usr/local/bin/mhsendmail https://github.com/mailhog/mhsendmail/releases/download/v0.2.0/mhsendmail_linux_amd64  \
      && chmod +x /usr/local/bin/mhsendmail
@@ -77,20 +67,43 @@ RUN apt-get remove -y libmcrypt-dev libicu-dev libpng-dev libjpeg-dev libfreetyp
   && rm -rf /var/lib/apt/lists/* \
   && rm -rf /tmp/*
 
+# -------------------------------------------------------
+# SERVE STAGE
+# -------------------------------------------------------
 
-# Add user for web application
-RUN groupadd -g $uid www
-RUN useradd -u $uid -ms /bin/bash -g www www
+# Get API Base Image
+FROM base-stage AS serve-stage
 
-# Copy existing application directory contents
-COPY . /var/www/html
+# Arguments defined in compose.yml
+ARG uid
 
-# Copy existing application directory permissions
-COPY --chown=www:www . /var/www/html
+# Install serve dependencies
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get -y --no-install-recommends install \
+    nginx \
+    memcached \
+    ssl-cert
 
-# Change current user to www
-USER www
+# Clean up, try to reduce image size
+RUN apt-get autoremove -y \
+    && apt-get clean all \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/*
 
-# Expose port 9000 and start php-fpm server
-EXPOSE 9000
-CMD ["php-fpm"]
+# Generate ssl certificate
+RUN make-ssl-cert generate-default-snakeoil --force-overwrite
+
+# Copy nginx config
+COPY .docker/services/webserver/config/sites-available/default.nginx /etc/nginx/sites-available/default
+
+# Copy entrypoint
+COPY .docker/services/webserver/entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN ln -s /usr/local/bin/entrypoint.sh /
+
+# Specify the entrypoint
+ENTRYPOINT ["entrypoint.sh"]
+
+# Set working dir
+WORKDIR /var/www/html
