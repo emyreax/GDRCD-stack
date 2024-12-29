@@ -44,9 +44,6 @@ need_help="false"
 need_usage4help="false"
 has_any_error="false"
 
-# ------------Services--------------#
-SERVICES_VARIANTS=("webserver" "database")
-
 # ---------------------------------------------------------------------
 # Utilities
 # ---------------------------------------------------------------------

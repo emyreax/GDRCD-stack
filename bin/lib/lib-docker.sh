@@ -44,6 +44,7 @@ isDockerRunning() {
   fi
 }
 
+# Checks if a Docker container exists by name or for all services in SERVICES array.
 isContainerExist() {
   # if container name is passed as argument, check if it exists
   if [[ "$1" ]]; then
@@ -54,7 +55,7 @@ isContainerExist() {
     return 0;
   fi
   # otherwise, check if all containers exist
-  for service in "${SERVICES_VARIANTS[@]}"; do
+  for service in "${SERVICES[@]}"; do
     # database
     if [[ "$service" == "database" ]]; then
       if [[ ! "$(docker ps -aq -f name="${PROJECT}_$service")" ]]; then
@@ -72,6 +73,7 @@ isContainerExist() {
   done
 }
 
+# Checks if a specific container or all containers are running and exits with an error if any are not.
 isContainerRunning() {
   # if container name is passed as argument, i check if it's running
   if [[ "$1" ]]; then
@@ -83,7 +85,7 @@ isContainerRunning() {
   fi
 
   # otherwise, i check if all containers are running
-  for service in "${SERVICES_VARIANTS[@]}"; do
+  for service in "${SERVICES[@]}"; do
     # database
     if [[ "$service" == "database" ]]; then
       if [[ ! "$(docker ps -q -f name="${PROJECT}_$service")" ]]; then
@@ -110,7 +112,14 @@ dockerCompose() {
   # Check if docker is running
   isDockerRunning
 
-  export \
-    STACK_DIR ;
-  docker compose -p "${PROJECT}" -f "$DOCKER_DIR/compose.yml" --env-file "$STACK_DIR/.env" "$@"
+  # Costruisci array dei profili attivi
+  profiles=()
+  for service in "phpmyadmin" "mailhog"; do
+    if isServiceEnabled "$service"; then
+      profiles+=("--profile" "$service")
+    fi
+  done
+
+  export STACK_DIR
+  docker compose -p "${PROJECT}" -f "$DOCKER_DIR/compose.yml" --env-file "$STACK_DIR/.env" "${profiles[@]}" "$@"
 }

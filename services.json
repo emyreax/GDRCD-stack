@@ -1,0 +1,12 @@
+{
+  "services": {
+    "phpmyadmin": {
+      "enabled": false,
+      "description": "phpMyAdmin database management"
+    },
+    "mailhog": {
+      "enabled": false,
+      "description": "Mail testing service"
+    }
+  }
+}
