@@ -19,15 +19,15 @@ COMMAND_NAME="${args[1]}"
 
 # Function for showing usage of this command
 usage() {
-  helpify_title "${SERVICE_NAME:-${CURRENT_DIR_NAME}} enable" "<service>"
-  helpify_subtitle "Enable optional services"; echo;
+  helpify_title "${SERVICE_NAME:-${CURRENT_DIR_NAME}} list"
+  helpify_subtitle "List all optional services"; echo;
   helpify_subtitle "OPTIONS:"
   helpify "-h, --help"          "Show this help";
 }
 
 # Function for showing usage of this command for help
 usage4help() {
-  helpify "enable"       "Enable optional services"
+  helpify "list"       "List all optional services"
 }
 
 # ---------------------------------------------------------------------
@@ -59,23 +59,30 @@ done
 # Execute post argument parsing checks
 finalize_argument_parsing
 
-# Validate required arguments
-if [[ -z "$service_name" ]] && [[ "$need_help" != "true" ]]; then
-  usage
-  exit 1
-fi
-
 #---------------------------RUN COMMAND-------------------------------#
 
-enable () {
-  enableService "$service_name"
-  message --success "Service $service_name enabled"
+list () {
+  # list all optional services
+  prompt -i "List all optional services...";
 
-  # Restart containers to apply changes
-  dockerCompose up -d
+  # Get all optional services
+  services=($(getAllOptionalServices))
+
+  # Print each service with its status and description
+  for service in "${services[@]}"; do
+
+    status="disabled"
+    if isServiceEnabled "$service"; then
+      status="enabled"
+    fi
+
+    description=$(getServiceDescription "$service")
+
+    helpify "$service" "$description" "Status: $status"
+  done
 }
 
 # Run command if this file is the command file
 if [[ "${COMMAND_NAME}" == "${CURRENT_FILE_NAME}" ]]; then
-  enable
+  list
 fi

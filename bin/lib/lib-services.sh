@@ -38,6 +38,29 @@ fi
 # Services
 # ---------------------------------------------------------------------
 
+# Get only enableb optional services
+getOptionalServices() {
+  local services=()
+  for service in "${SERVICES[@]}"; do
+    if [[ "${CORE_SERVICES[*]}" =~ $service ]]; then
+      continue
+    fi
+    services+=("$service")
+  done
+  echo "${services[@]}"
+}
+
+# Get all optional services
+getAllOptionalServices() {
+  local services=()
+  if [[ -f "${STACK_DIR}/services.json" ]]; then
+    for service in $(jq -r '.services | keys[]' "${STACK_DIR}/services.json"); do
+      services+=("$service")
+    done
+  fi
+  echo "${services[@]}"
+}
+
 # Get service description
 getServiceDescription() {
   local service=$1
