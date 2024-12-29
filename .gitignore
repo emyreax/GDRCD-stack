@@ -3,7 +3,7 @@
 .vscode
 
 # CONF
-service.json
+services.json
 
 # LOGS
 logs/*
