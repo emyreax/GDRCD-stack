@@ -27,7 +27,7 @@ CORE_SERVICES=("webserver" "database")
 SERVICES=()
 SERVICES=("${CORE_SERVICES[@]}")
 if [[ -f "${STACK_DIR}/services.json" ]]; then
-  for service in $(jq -r 'keys[]' "${STACK_DIR}/services.json"); do
+  for service in $(jq -r '.services | keys[]' "${STACK_DIR}/services.json"); do
     if jq -r ".services.\"$service\".enabled" "${STACK_DIR}/services.json" | grep -q "true"; then
       SERVICES+=("$service")
     fi
