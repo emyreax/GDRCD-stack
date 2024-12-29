@@ -58,22 +58,40 @@ isServiceEnabled() {
   return 1
 }
 
-# Funzione per abilitare un servizio nel file JSON
+# Enable a service in the JSON file
 enableService() {
   local service=$1
-  if [[ -f "${STACK_DIR}/services.json" ]]; then
-    # Usa jq per impostare il valore del servizio a true
-    tmp=$(mktemp)
-    jq ".[\"$service\"] = true" "${STACK_DIR}/services.json" > "$tmp" && mv "$tmp" "${STACK_DIR}/services.json"
+  if [[ ! -f "${STACK_DIR}/services.json" ]]; then
+    message --error "services.json not found"
+    return 1
   fi
+
+  # Check if service exists
+  if ! jq -e ".services.\"$service\"" "${STACK_DIR}/services.json" >/dev/null; then
+    message --error "Service '$service' not found"
+    return 1
+  fi
+
+  # Update enabled status to true
+  tmp=$(mktemp)
+  jq ".services.\"$service\".enabled = true" "${STACK_DIR}/services.json" > "$tmp" && mv "$tmp" "${STACK_DIR}/services.json"
 }
 
-# Funzione per disabilitare un servizio nel file JSON
+# Disable a service in the JSON file
 disableService() {
   local service=$1
-  if [[ -f "${STACK_DIR}/services.json" ]]; then
-    # Usa jq per impostare il valore del servizio a false
-    tmp=$(mktemp)
-    jq ".[\"$service\"] = false" "${STACK_DIR}/services.json" > "$tmp" && mv "$tmp" "${STACK_DIR}/services.json"
+  if [[ ! -f "${STACK_DIR}/services.json" ]]; then
+    message --error "services.json not found"
+    return 1
   fi
+
+  # Check if service exists
+  if ! jq -e ".services.\"$service\"" "${STACK_DIR}/services.json" >/dev/null; then
+    message --error "Service '$service' not found"
+    return 1
+  fi
+
+  # Update enabled status to false
+  tmp=$(mktemp)
+  jq ".services.\"$service\".enabled = false" "${STACK_DIR}/services.json" > "$tmp" && mv "$tmp" "${STACK_DIR}/services.json"
 }
