@@ -158,7 +158,7 @@ usageSubDirCommands () {
 messageUnknownCommand () {
   # show error
   prompt -e "Unknown argument: $2";
-  prompt -i "Try './gdrcd-stack $1 --help' for more information.";
+  prompt -i "Try './run $1 --help' for more information.";
 }
 
 # ---------------------------------------------------------------------
@@ -169,19 +169,19 @@ messageUnknownCommand () {
 finalize_argument_parsing() {
   # if has_any_error is true, exit with error code
   if [[ "${has_any_error}" == "true" ]]; then
-    prompt -i "Try './gdrcd-stack --help' for more information."; exit 1
+    prompt -i "Try './run --help' for more information."; exit 1
   fi
 
   if [[ "${need_help}" == "true" ]]; then
     # Force to stop the script
     forceStop="true"
 
-    # HELP > gdrcd-stack
-    if [[ "${need_usage4help}" == "true" && "${1}" != "gdrcd-stack" ]]; then
+    # HELP > stack
+    if [[ "${need_usage4help}" == "true" && "${1}" != "run" ]]; then
       usage4help;
       # Continue the script execution
       forceStop="false"
-    # HELP > gdrcd-stack > Command
+    # HELP > stack > Command
     else
       usage;
     fi

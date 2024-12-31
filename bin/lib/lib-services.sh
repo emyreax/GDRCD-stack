@@ -22,99 +22,103 @@ PROCESS_SOURCE=("$LIB_NAME")
 
 # ------------Services--------------#
 CORE_SERVICES=("webserver" "database")
+OPTIONAL_SERVICES=("phpmyadmin" "mailhog")
 
-# Combine CORE_SERVICES and the services from services.json (only the enabled ones)
+# Combine CORE_SERVICES and the services from services (only the enabled ones)
 SERVICES=()
 SERVICES=("${CORE_SERVICES[@]}")
-if [[ -f "${STACK_DIR}/services.json" ]]; then
-  for service in $(jq -r '.services | keys[]' "${STACK_DIR}/services.json"); do
-    if jq -r ".services.\"$service\".enabled" "${STACK_DIR}/services.json" | grep -q "true"; then
-      SERVICES+=("$service")
-    fi
-  done
+if [[ -f "${STACK_DIR}/services" ]]; then
+  # Read comma-separated services from file
+  while IFS=',' read -ra ENABLED; do
+    for service in "${ENABLED[@]}"; do
+      # Trim whitespace
+      service=$(echo "$service" | xargs)
+      if [[ -n "$service" ]]; then
+        SERVICES+=("$service")
+      fi
+    done
+  done < "${STACK_DIR}/services"
 fi
+
+# ------------Services Descriptions--------------#
+SERVICE_DESCRIPTIONS=(
+  "phpmyadmin:Web interface for MySQL database management"
+  "mailhog:Email testing tool for local development"
+)
 
 # ---------------------------------------------------------------------
 # Services
 # ---------------------------------------------------------------------
 
-# Get only enableb optional services
+# Get only enabled optional services
 getOptionalServices() {
   local services=()
   for service in "${SERVICES[@]}"; do
-    if [[ "${CORE_SERVICES[*]}" =~ $service ]]; then
-      continue
+    if [[ ! "${CORE_SERVICES[*]}" =~ $service ]]; then
+      services+=("$service")
     fi
-    services+=("$service")
   done
   echo "${services[@]}"
 }
 
-# Get all optional services
+# Get all available optional services
 getAllOptionalServices() {
-  local services=()
-  if [[ -f "${STACK_DIR}/services.json" ]]; then
-    for service in $(jq -r '.services | keys[]' "${STACK_DIR}/services.json"); do
-      services+=("$service")
-    done
-  fi
-  echo "${services[@]}"
+  echo "${OPTIONAL_SERVICES[@]}"
 }
 
 # Get service description
 getServiceDescription() {
   local service=$1
-  if [[ -f "${STACK_DIR}/services.json" ]]; then
-    jq -r ".services.\"$service\".description" "${STACK_DIR}/services.json"
-  fi
+
+  for desc in "${SERVICE_DESCRIPTIONS[@]}"; do
+    IFS=':' read -r svc description <<< "$desc"
+    if [[ "$svc" == "$service" ]]; then
+      echo "$description"
+      return
+    fi
+  done
+
+  echo "No description available"
 }
 
-# Checks if a given service is enabled by reading the services.json file
+# Check if service is enabled
 isServiceEnabled() {
   local service=$1
-  if [[ -f "${STACK_DIR}/services.json" ]]; then
-    enabled=$(jq -r ".services.\"$service\".enabled" "${STACK_DIR}/services.json")
-    if [[ "${enabled}" == "true" ]]; then
-      return 0
-    fi
-  fi
-  return 1
+  [[ "${SERVICES[*]}" =~ $service ]]
 }
 
-# Enable a service in the JSON file
+# Enable a service
 enableService() {
   local service=$1
-  if [[ ! -f "${STACK_DIR}/services.json" ]]; then
-    message --error "services.json not found"
-    return 1
-  fi
 
-  # Check if service exists
-  if ! jq -e ".services.\"$service\"" "${STACK_DIR}/services.json" >/dev/null; then
+  # Validate service exists
+  if [[ ! "${OPTIONAL_SERVICES[*]}" =~ $service ]]; then
     message --error "Service '$service' not found"
     return 1
   fi
 
-  # Update enabled status to true
-  tmp=$(mktemp)
-  jq ".services.\"$service\".enabled = true" "${STACK_DIR}/services.json" > "$tmp" && mv "$tmp" "${STACK_DIR}/services.json"
+  # Add to services file if not already enabled
+  if ! isServiceEnabled "$service"; then
+    if [[ -f "${STACK_DIR}/services" ]]; then
+      echo -n ",$service" >> "${STACK_DIR}/services"
+    else
+      echo "$service" > "${STACK_DIR}/services"
+    fi
+  fi
 }
 
-# Disable a service in the JSON file
+# Disable a service
 disableService() {
   local service=$1
-  if [[ ! -f "${STACK_DIR}/services.json" ]]; then
-    message --error "services.json not found"
-    return 1
-  fi
 
-  # Check if service exists
-  if ! jq -e ".services.\"$service\"" "${STACK_DIR}/services.json" >/dev/null; then
+  # Validate service exists
+  if [[ ! "${OPTIONAL_SERVICES[*]}" =~ $service ]]; then
     message --error "Service '$service' not found"
     return 1
   fi
 
-  # Update enabled status to false
-  tmp=$(mktemp)
-  jq ".services.\"$service\".enabled = false" "${STACK_DIR}/services.json" > "$tmp" && mv "$tmp" "${STACK_DIR}/services.json"
+  # Remove from services file if enabled
+  if isServiceEnabled "$service"; then
+    sed -i "/$service/d" "${STACK_DIR}/services"
+  fi
 }

@@ -91,7 +91,7 @@ install() {
       exit 1;
     fi;
 
-  # Check if gdrcd-stack is already installed
+  # Check if stack is already installed
   if [[ -f "${target}/${PROJECT}" ]]; then
     if [[ "${force_reinstall}" == "true" ]]; then
       rm -f "${target}/${PROJECT}";
@@ -106,8 +106,8 @@ install() {
     mkdir -p "$target";
   fi;
 
-  # Create link to the gdrcd-stack binary
-  ln -sf "${STACK_DIR}/gdrcd-stack" "$target/${PROJECT}" 2>/dev/null;
+  # Create link to the stack binary
+  ln -sf "${STACK_DIR}/run" "$target/${PROJECT}" 2>/dev/null;
 
   # Set the permissions
   chmod +x "$target/${PROJECT}";

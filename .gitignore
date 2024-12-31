@@ -3,12 +3,13 @@
 .vscode
 
 # CONF
-services.json
+services
+version
 
 # LOGS
 logs/*
 !logs/database/.gitkeep
-!logs/web/.gitkeep
+!logs/nginx/.gitkeep
 
 # WWW
 www
