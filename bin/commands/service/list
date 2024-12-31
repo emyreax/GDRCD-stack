@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+importLib "lib/lib-docker.sh"
+
+# Get current file name
+CURRENT_FILE_NAME="$(basename "${BASH_SOURCE[0]}")"
+# Get directory name
+CURRENT_DIR_NAME="$(basename "$(dirname "${BASH_SOURCE[0]}")")"
+
+# Save command name
+args=("$@")
+# Set service name by arguments or by current directory name
+SERVICE_NAME="${args[0]}"
+COMMAND_NAME="${args[1]}"
+
+# ---------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------
+
+# Function for showing usage of this command
+usage() {
+  helpify_title "${SERVICE_NAME:-${CURRENT_DIR_NAME}} list"
+  helpify_subtitle "List all optional services"; echo;
+  helpify_subtitle "OPTIONS:"
+  helpify "-h, --help"          "Show this help";
+}
+
+# Function for showing usage of this command for help
+usage4help() {
+  helpify "list"       "List all optional services"
+}
+
+# ---------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------
+
+#---------------------------PARSE ARGUMENTS-------------------------------#
+
+service_name=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  if [[ "$1" == "${COMMAND_NAME}" || "$1" == "${SERVICE_NAME}" ]]; then
+    shift; continue
+  fi
+
+  case "$1" in
+    -h|--help)
+      need_help="true"
+      shift
+      ;;
+    *)
+      service_name="$1"
+      shift
+      ;;
+  esac
+done
+
+# Execute post argument parsing checks
+finalize_argument_parsing
+
+#---------------------------RUN COMMAND-------------------------------#
+
+list () {
+  # list all optional services
+  prompt -i "List all optional services...";
+
+  # Get all optional services
+  services=($(getAllOptionalServices))
+
+  # Print each service with its status and description
+  for service in "${services[@]}"; do
+
+    status="disabled"
+    if isServiceEnabled "$service"; then
+      status="enabled"
+    fi
+
+    description=$(getServiceDescription "$service")
+
+    helpify "$service" "$description" "Status: $status"
+  done
+}
+
+# Run command if this file is the command file
+if [[ "${COMMAND_NAME}" == "${CURRENT_FILE_NAME}" ]]; then
+  list
+fi

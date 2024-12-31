@@ -3,16 +3,16 @@
 .vscode
 
 # CONF
-# .docker/web/conf.d/php.conf
+services
 
 # LOGS
 logs/*
 !logs/database/.gitkeep
-!logs/web/.gitkeep
+!logs/nginx/.gitkeep
 
-# SERVICES
-service
-!service/.gitkeep
+# WWW
+www
+!www/.gitkeep
 
 #ENV
 .env

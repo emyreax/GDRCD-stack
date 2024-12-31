@@ -1,39 +1,42 @@
-# GDRCD-Stack
+# GDRCD > Stack
 
-Lo scopo di GDRCD-Stack è di fornire un basilare ambiente di sviluppo per GDRCD, il principale engine Open Source di Giochi di Ruolo play-by-chat,
-fornendo all'utilizzatore tutti gli strumenti necessari per la sua realizzazione.
+Lo scopo di questo strumento è di fornire un basilare ambiente di sviluppo per [GDRCD](https://github.com/GDRCD/GDRCD), lo Script per la creazione di Giochi di Ruolo "Play by Chat" su browser, e dotare l'utilizzatore di tutti gli strumenti necessari per la sua realizzazione.
 
-Questa soluzione è stata pensata prevalentemente per lo sviluppo in locale, tuttavia può essere utilizzato anche per un ambiente di produzione.
+Questa soluzione è stata pensata prevalentemente per lo sviluppo in locale, si sconsiglia l'uso in ambienti di produzione se non si hanno le capacità necessarie per comprenderne il funzionamento.
 
 ## Requisiti
 
-Per utilizzare lo stack presente in questa repository, occorre aver installato sul proprio terminale Docker e GIT.
+Per utilizzare lo ***stack*** presente in questa repository, occorre aver installato sul proprio terminale Docker e GIT.
 Di seguito, gli indirizzi con i riferimenti per l'installazione di questi strumenti:
 
 - [Docker Desktop (o Docker Toolbox)](https://www.docker.com/products/docker-desktop)
 - [GIT](https://git-scm.com/downloads)
 
-Occorre avere un minimo di dimestichezza con il terminale (come può essere Powershell, la Bash di Linux o il Terminale di macOS) per poter utilizzare lo stack.
+Occorre avere un minimo di dimestichezza con il terminale per poter utilizzare lo ***stack***.
+
+>N.B.: Su sistemi Linux e macOS si utilizza la shell Bash, mentre su Windows è necessario utilizzare WSL (Windows Subsystem for Linux), poiché **lo stack non è compatibile con PowerShell**.
 
 ## Installazione
 
-Per utilizzare GDRCD-stack, clona il progetto in una qualsiasi cartella sul tuo PC. Puoi farlo scaricando l'intero progetto compresso in una cartella zip oppure utilizzando GIT ed eseguendo il seguente comando:
+Per utilizzare ***stack***, clona il progetto in una qualsiasi cartella sul tuo PC. Puoi farlo scaricando l'intero progetto compresso in una cartella zip oppure utilizzando GIT ed eseguendo il seguente comando:
 
 ```shell
-git clone https://github.com/GDRCD/GDRCD-stack.git
+git clone https://github.com/GDRCD/stack.git
 ```
 
-Il comando salverà in una cartella `gdrcd-stack` l'intera struttura dello stack. Puoi inserirlo in una cartella a tuo piacimento, aggiungendo in fondo al comando sopra indicato il nome della cartella desiderata (qualora non sia presente, la crea in automatico).
+Il comando salverà in una cartella `stack` l'intera struttura. Puoi inserirlo in una cartella a tuo piacimento, aggiungendo in fondo al comando sopra indicato il nome della cartella desiderata (qualora non sia presente, la crea in automatico).
 
-Una volta terminato il salvataggio dei file dello stack, occorre inserire il proprio progetto dentro la cartella `service`. Può essere fatto manualmente, così come attraverso `git`.
+Una volta terminato il salvataggio dei file dello stack, occorre inserire il proprio progetto dentro la cartella [`www`](www ). Può essere fatto manualmente, così come attraverso `git`.
 Per chi sta iniziando con un nuovo progetto di GDRCD, sarà sufficiente eseguire i seguenti comandi:
 
 ```shell
-cd service # ci si sposta nella cartella del progetto
-git clone https://github.com/GDRCD/GDRCD.git # clona il progetto GDRCD
+cd www
+git clone https://github.com/GDRCD/GDRCD.git
 ```
 
-A questo punto, copiare il file `sample.env` in un nuovo file `.env` e compilare le varie variabili presenti.
+> N.B.: potrebbe accadere che questo passaggio dia errore per via della presenza del file `.gitkeep`. Nel caso si può tranquillamente rimuovere quest'ultimo e ritentare lo scarico del progetto.
+
+A questo punto, copiare il file [`sample.env`](sample.env ) in un nuovo file [`.env`](.env ) e compilare le varie variabili presenti.
 È molto importante specificare quale versione di PHP si desidera utilizzare, popolando la variabile `PHP_VERSION` con il numero di versione desiderato tra quelle disponibili.
 
 Di seguito le versioni attualmente supportate, con i relativi riferimenti:
@@ -41,59 +44,264 @@ Di seguito le versioni attualmente supportate, con i relativi riferimenti:
 - PHP 7.4 (php74)
 - PHP 8.0 (php8)
 
-Puoi cambiare la versione PHP utilizzata in qualsiasi momento, cambiando la variabile nel file `.env`  e ricostruendo lo stack.
+> N.B.: Puoi cambiare la versione PHP utilizzata in qualsiasi momento, cambiando la variabile nel file [`.env`](.env )  e ricostruendo lo stack.
 
-Ora il tuo GDRCD-Stack è pronto e funzionante!!
+Per proseguire con l'installazione, occorre eseguire il comando di installazione con i permessi di amministratore:
+```shell
+sudo ./run install
+```
+
+>N.B.: è possibile configurare il percorso in cui installare il comando globale aggiungendo l'opzione `-t` dopo [`bin/commands/install`](bin/commands/install ) seguito dal percorso desiderato. Di default, il comando viene installato in [`/usr/local/bin/`](/usr/local/bin/ ).
+
+Il comando di installazione configura l'ambiente di sviluppo e crea un alias di sistema per il progetto.
+L'alias sarà uguale al nome specificato nella variabile PROJECT del file `.env`.
+
+Ad esempio, se nel file `.env` è stato impostato:
+```shell
+PROJECT=mygdrcd
+```
+
+Una volta completata l'installazione, sarà possibile utilizzare il comando:
+```shell
+mygdrcd <comando>
+```
+
+al posto di:
+```shell
+./run <comando>
+```
+
+Ora il tuo ***stack*** è pronto e funzionante!
 
 ## Utilizzo
 
-Per facilitare l'utilizzo dello strumento, è stato predisposto il comando `gdrcd-stack` che raccoglie una serie di comandi utili all'esecuzione delle funzioni primarie dello stack.
+Per facilitare l'utilizzo dello strumento, è stato predisposto il comando `run` che raccoglie una serie di comandi utili all'esecuzione delle funzioni primarie dello stack.
 Il comando non è altro che un file eseguibile da terminale, motivo per il quale è necessario usare la formula:
-
 ```shell
-./gdrcd-stack <comando>
+./run <comando>
 ```
 
-Per avviare l'esecuzione dei servizi dello stack, sarà sufficiente eseguire il seguente comando:
-
+Per avviare l'esecuzione dei servizi dello ***stack***, sarà sufficiente eseguire il seguente comando:
 ```shell
-./gdrcd-stack start
+./run start
 ```
 
-In automatico avverrà la compilazione dello stack, processo che si occuperà di costruire i singoli servizi e di istanziarli in appositi container di docker, e l'avvio dei servizi.
+In automatico avverrà la compilazione dello ***stack***, processo che si occuperà di costruire i singoli servizi e di istanziarli in appositi container di docker, e l'avvio dei servizi.
 
 La compilazione dello stack può essere effettuata manualmente in qualsiasi momento, attraverso il comando:
-
 ```shell
-./gdrcd-stack build
+./run build
 ```
 
-Ciò può essere utile qualora vengono apportate modifiche allo stack, come ad esempio una modifica alla versione PHP utilizzata, o se si desidera aggiungere nuovi servizi.
+Ciò può essere utile qualora vengono apportate modifiche allo ***stack***, come ad esempio una modifica alla versione PHP utilizzata, o se si desidera aggiungere nuovi servizi.
 
-Per fermare i servizi dello stack, è sufficiente eseguire il seguente comando:
-
+Per fermare i servizi dello ***stack***, è sufficiente eseguire il seguente comando:
 ```shell
-./gdrcd-stack stop
+./run stop
 ```
 
-Assieme a questi comandi, è stato predisposto anche un comando per rimuovere compleatamente lo stack, in modo da poterne ricominciare da capo:
-
+Assieme a questi comandi, è stato predisposto anche un comando per rimuovere compleatamente lo ***stack***, in modo da poterne ricominciare da capo:
 ```shell
-./gdrcd-stack clean
+./run clean
 ```
 
 ## Comandi Utili
 
 Di seguito i comandi a disposizione:
-
 ```shell
-./gdrcd-stack start # avvia lo stack
-./gdrcd-stack stop # ferma lo stack
-./gdrcd-stack restart # riavvia lo stack
-./gdrcd-stack build # compila lo stack
-./gdrcd-stack clean # rimuove tutti tutti i servizi generati dallo stack
-./gdrcd-stack help # mostra i comandi a disposizione
+./run start # avvia lo stack
+./run stop # ferma lo stack
+./run restart # riavvia lo stack
+./run build # compila lo stack
+./run clean # rimuove tutti tutti i servizi generati dallo stack
+./run help # mostra i comandi a disposizione
 ```
+
+## Dettaglio dei Comandi
+
+`./run start`
+
+Avvia tutti i container dello stack.
+
+`./run stop`
+
+Ferma tutti i container dello stack.
+
+`./run restart`
+
+Riavvia tutti i container dello stack.
+
+`./run build`
+
+Compila tutti i container dello stack.
+
+Opzioni disponibili:
+- `-f, --force`: Forza la ricompilazione dei container
+
+`./run clean`
+
+Rimuove tutti i container dello stack.
+
+Opzioni disponibili:
+- `-v, --volumes`: Rimuove anche i volumi associati ai container
+
+`./run logs`
+
+Mostra i log di tutti i container dello stack.
+
+Opzioni disponibili:
+- `-f, --follow`: Segue i log in tempo reale
+
+`./run recreate`
+
+Ricrea tutti i container e le reti dello stack.
+
+Opzioni disponibili:
+- `-f, --force`: Forza la ricreazione dei container
+
+`sudo ./run install`
+
+Installa lo stack e crea un alias di sistema per il progetto.
+
+Opzioni disponibili:
+- `-t, --target <path>`: Specifica il percorso di installazione del comando globale (default: [`/usr/local/bin/`](/usr/local/bin/ ))
+- `-f, --force`: Forza la reinstallazione del comando globale
+
+`./run service list`
+
+Elenca tutti i servizi opzionali disponibili.
+
+`./run service enable <service>`
+
+Abilita un servizio opzionale.
+
+`./run service disable <service>`
+
+Disabilita un servizio opzionale.
+
+`./run database logs`
+
+Mostra i log del container `database`.
+
+Opzioni disponibili:
+- `-f, --follow`: Segue i log in tempo reale
+
+`./run database start`
+
+Avvia il container `database`.
+
+`./run database stop`
+
+Ferma il container `database`.
+
+`./run database restart`
+
+Riavvia il container `database`.
+
+`./run database build`
+
+Compila il container `database`.
+
+Opzioni disponibili:
+- `-f, --force`: Forza la ricompilazione del container
+
+`./run database attach`
+
+Accede alla shell del container `database`.
+
+`./run webserver logs`
+
+Mostra i log del container `webserver`.
+
+Opzioni disponibili:
+- `-f, --follow`: Segue i log in tempo reale
+
+`./run webserver start`
+
+Avvia il container `webserver`.
+
+`./run webserver stop`
+
+Ferma il container `webserver`.
+
+`./run webserver restart`
+
+Riavvia il container `webserver`.
+
+`./run webserver build`
+
+Compila il container `webserver`.
+
+Opzioni disponibili:
+- `-f, --force`: Forza la ricompilazione del container
+
+`./run webserver attach`
+
+Accede alla shell del container `webserver`.
+
+`./run phpmyadmin logs`
+
+Mostra i log del container `phpmyadmin`.
+
+Opzioni disponibili:
+- `-f, --follow`: Segue i log in tempo reale
+
+`./run phpmyadmin start`
+
+Avvia il container `phpmyadmin`.
+
+`./run phpmyadmin stop`
+
+Ferma il container `phpmyadmin`.
+
+`./run phpmyadmin restart`
+
+Riavvia il container `phpmyadmin`.
+
+`./run phpmyadmin build`
+
+Compila il container `phpmyadmin`.
+
+Opzioni disponibili:
+- `-f, --force`: Forza la ricompilazione del container
+
+`./run phpmyadmin attach`
+
+Accede alla shell del container `phpmyadmin`.
+
+`./run mailhog logs`
+
+Mostra i log del container `mailhog`.
+
+Opzioni disponibili:
+- `-f, --follow`: Segue i log in tempo reale
+
+`./run mailhog start`
+
+Avvia il container `mailhog`.
+
+`./run mailhog stop`
+
+Ferma il container `mailhog`.
+
+`./run mailhog restart`
+
+Riavvia il container `mailhog`.
+
+`./run mailhog build`
+
+Compila il container `mailhog`.
+
+Opzioni disponibili:
+- `-f, --force`: Forza la ricompilazione del container
+
+`./run mailhog attach`
+
+Accede alla shell del container `mailhog`.
+
+>N.B.: Se utilizzi l'installazione, non è necessario eseguire ogni volta il comando da eseguibile, ma direttamente dalla shortcut globale.
+
+>N.B.: Ogni comando dispone di un'opzione `-h` per visualizzare le opzioni disponibili.
 
 ## Servizi Disponibili
 
@@ -104,14 +312,13 @@ Lo stack mette a disposizione una serie di servizi, che sono:
 - PhpMyAdmin (phpmyadmin)
 - Mailhog (mailhog)
 
-N.B.:
-Il servizio `mailhog` è un servizio di test che permette di visualizzare le email inviate dal sistema e funziona solo in ambiente `dev`.
+>N.B.: Il servizio `mailhog` è un servizio di test che permette di visualizzare le email inviate dal sistema e funziona solo in ambiente `dev`.
 
 ## Segnalazione bug e richieste di aiuto
 
 Prima di aprire una segnalazione bug o una richiesta di aiuto, assicurati che il tuo problema non sia già stato trattato
-tra le varie [issues](https://github.com/GDRCD/GDRCD-stack/issues). Se non trovi nulla, puoi aprirne una nuova
-[qui](https://github.com/GDRCD/GDRCD-stack/issues/new).
+tra le varie [issues](https://github.com/GDRCD/stack/issues). Se non trovi nulla, puoi aprirne una nuova
+[qui](https://github.com/GDRCD/stack/issues/new).
 
 ## Riferimenti
 

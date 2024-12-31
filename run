@@ -1,0 +1,143 @@
+#!/usr/bin/env bash
+
+################################################################################
+
+# WARNING: Please make this shell not working-directory dependant, for example
+# instead of using 'ls blabla', use 'ls "${STACK_DIR}/blabla"'
+#
+# WARNING: Don't use "cd" in this shell, use it in a subshell instead,
+# for example ( cd blabla && do_blabla ) or $( cd .. && do_blabla )
+
+################################################################################
+
+# ---------------------------------------------------------------------
+# Variables
+# ---------------------------------------------------------------------
+
+# Check on OS type for stack directory
+# Mac OS
+if [[ "$(uname)" == "Darwin" ]]; then
+  # check if greadlink is installed
+  if ! command -v greadlink &> /dev/null; then
+    echo "greadlink could not be found, please install it with 'brew install coreutils'"; exit 1
+  fi
+  readonly STACK_DIR="$(dirname "$(greadlink -m "${0}")")"
+# Windows
+elif [[ "$(expr substr "$(uname -s)" 1 10)" == "MINGW64_NT" ]]; then
+  readonly STACK_DIR="$(dirname "$(readlink -m "${0}")")"
+# Linux
+else
+  readonly STACK_DIR="$(dirname "$(readlink -m "${0}")")"
+fi
+source "${STACK_DIR}/bin/lib/lib-core.sh"
+
+# ---------------------------------------------------------------------
+# Import Libraries
+# ---------------------------------------------------------------------
+
+importLib "lib/lib-helpify.sh"
+importLib "lib/lib-messages.sh"
+
+importLib "lib/lib-services.sh"
+importLib "lib/lib-commands.sh"
+
+
+# -----------------------------------------------------------------------------
+# Helpers
+# -----------------------------------------------------------------------------
+
+usage () {
+  # show usage for all commands
+  need_usage4help="true"
+
+  # add logo
+  logo
+  # add version info (use function getVersion)
+  versionInfo
+
+  echo;
+
+  helpify_title "" "[OPTIONS...] COMMAND [OPTIONS...]"
+  helpify_subtitle "It allows you to easily orchestrate the development stack for GDRCD"; echo;
+  helpify_subtitle "OPTIONS:"
+  helpify   "-h, --help"    "Show this help"
+  helpify_separator
+
+  #
+  usageCommands
+
+  #
+  usageSubDirsCommands
+}
+
+usageService () {
+  # show usage for service commands
+  need_help="true";
+  need_usage4help="true"
+
+  #
+  usageServiceCommands "${1}"
+
+  # force exit
+  exit 0;
+}
+
+# -----------------------------------------------------------------------------
+# Main
+# -----------------------------------------------------------------------------
+
+# Get environment variables
+importEnv
+
+# Check if the version is up to date
+checkVersion
+
+# If no arguments are passed, show usage
+if [[ $# -eq 0 ]]; then
+  need_help="true";
+fi
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      need_help="true"; shift ;;
+    -*|--*)
+      prompt -e "Error! Unrecognized stack option: ${1}";
+      has_any_error="true"; shift ;;
+    *)
+      # if is a valid command, run it
+      if isCommand "$1" ; then
+        # shellcheck source=bin
+        source "${COMMANDS_DIR}/$1";
+        exit 0;
+      # otherwise, check if is a valid sub-command
+      elif isSubCommand "$1"; then
+        # check if there is a second argument
+        if [[ $# -gt 1 ]]; then
+          # if is a valid command, run it
+          if isCommand --abs-path "${COMMANDS_DIR}/$1/$2"; then
+            # shellcheck source=bin
+            source "${COMMANDS_DIR}/$1/$2";
+            exit 0;
+          # otherwise, if there is no other entries, show error
+          else
+            prompt -e "Error! Unrecognized $1 command: ${2}"; has_any_error="true";
+            break;
+          fi
+        else
+          usageService "$1" || exit 1
+        fi
+      # otherwise, if there is no other entries, show error
+      else
+        prompt -e "Error! Unrecognized stack command: ${*}"; has_any_error="true";
+        break;
+      fi
+      shift ;;
+  esac
+done
+
+# Execute post argument parsing checks
+finalize_argument_parsing
+
+echo;
