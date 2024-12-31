@@ -69,7 +69,12 @@ fi
 #---------------------------RUN COMMAND-------------------------------#
 
 disable () {
+  # Handle container existence
+  dockerCompose stop "$service_name"
+  dockerCompose rm -f "$service_name"
+  # Disable service
   disableService "$service_name"
+
   message --success "Service $service_name disabled"
 
   # Restart containers to apply changes
