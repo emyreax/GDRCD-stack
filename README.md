@@ -209,6 +209,24 @@ Opzioni disponibili:
 
 Accede alla shell del container `database`.
 
+`run database export <database_name> [file]`
+
+Esporta un database in un file di dump.
+
+Opzioni disponibili:
+- `-c, --compress`: Esporta un file di dump compresso
+
+`run database import <database_name> <file>`
+
+Importa un file di dump (.sql, .sql.gz).
+
+Opzioni disponibili:
+- `-fd, --force-drop`: Elimina lo schema prima dell'importazione
+
+`run database refresh <database_name>`
+
+Pulisce tutte le tabelle nel database.
+
 `./run webserver logs`
 
 Mostra i log del container `webserver`.
@@ -328,4 +346,3 @@ Di seguito le versioni di riferimento dell'engine OS GDRCD:
 
 ## Licenza
 [MIT](https://choosealicense.com/licenses/mit/)
-
