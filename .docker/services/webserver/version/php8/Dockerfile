@@ -1,5 +1,5 @@
 # Create image based on the official PHP-FMP image
-FROM php:8.0-fpm-bullseye
+FROM php:8.0-fpm-bullseye AS base-stage
 
 # Arguments defined in docker-compose.yml
 ARG uid
