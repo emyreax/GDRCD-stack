@@ -73,6 +73,54 @@ al posto di:
 
 Ora il tuo ***stack*** è pronto e funzionante!
 
+## Configurazione GDRCD
+
+Affinché GDRCD possa funzionare correttamente con lo ***stack*** occorre modificare il file di configurazione dell'engine affinchè possa utilizzare i servizi forniti da questo strumento.
+
+Ad esempio, per la connessione al database vanno utilizzati i seguenti parametri di connessione:
+
+| Variabile | Descrizione | Valore |
+|-----------|-------------|----------------|
+| `host` o `url` | Nome o url dell'host che fornisce il servizio database | `${PROJECT}_database`, quindi ad esempio: `gdrcd_database` |
+| `username` | Nome dell'utente con cui si effettua la connessione al database | `root` o `$MYSQL_USER`, quindi ad esempio: `gdrcd` |
+| `password` | Password dell'utente | `$MYSQL_ROOT_PASSWORD` se si è scelto `root` o `$MYSQL_PASSWORD` |
+| `database` | Nome del database | `$MYSQL_DATABASE`, quindi ad esempio: `gdrcd` |
+
+Molti di questi esempi fanno riferimento ai valori associati alle variabili presenti nel file `.env` e che verranno spiegate nel prossimo paragrafo.
+
+## Variabili
+
+Le seguenti variabili possono essere configurate nel file `.env`:
+
+### Configurazione Progetto
+| Variabile | Descrizione | Valore Esempio |
+|-----------|-------------|----------------|
+| `PROJECT` | Nome del progetto usato per identificare il comando globale e i container | `gdrcd` |
+
+### Configurazione Servizi
+| Variabile | Descrizione | Valore Esempio |
+|-----------|-------------|----------------|
+| `SERVICE_PORT` | Porta per il server web | `80` |
+| `PMA_PORT` | Porta per accedere a phpMyAdmin | `8080` |
+| `MAILHOG_PORT` | Porta per accedere al pannello di MailHog | `8025` |
+| `DB_PORT` | Porta per il server MySQL | `3306` |
+
+### Configurazione PHP
+| Variabile | Descrizione | Valore Esempio |
+|-----------|-------------|----------------|
+| `PHP_VERSION` | Versione di PHP da utilizzare | `php74` |
+| `PHP_UID` | ID utente per i processi PHP (www-data) | `1000` |
+
+#### Configurazione Database
+| Variabile | Descrizione | Valore Esempio |
+|-----------|-------------|----------------|
+| `MYSQL_ROOT_PASSWORD` | Password utente root MySQL | `root` |
+| `MYSQL_USER` | Nome utente applicativo MySQL | `gdrcd` |
+| `MYSQL_PASSWORD` | Password utente applicativo MySQL | `gdrcd` |
+| `MYSQL_DATABASE` | Nome del database predefinito | `gdrcd` |
+
+Copia il file `sample.env` in `.env` e modifica i valori secondo le tue necessità. I valori di esempio sono forniti solo come riferimento.
+
 ## Utilizzo
 
 Per facilitare l'utilizzo dello strumento, è stato predisposto il comando `run` che raccoglie una serie di comandi utili all'esecuzione delle funzioni primarie dello stack.
