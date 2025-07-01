@@ -87,7 +87,7 @@ RUN rm -rf /var/cache/apk/* \
     && rm -rf /tmp/*
 
 # Copy nginx config
-COPY .docker/services/webserver/config/sites-available/default.nginx /etc/nginx/conf.d/default.conf
+COPY .docker/services/webserver/config/sites-available/default.nginx /etc/nginx/http.d/default.conf
 
 # Copy entrypoint
 COPY .docker/services/webserver/entrypoint.sh /usr/local/bin/
