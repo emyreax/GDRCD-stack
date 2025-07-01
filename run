@@ -38,7 +38,9 @@ source "${STACK_DIR}/bin/lib/lib-core.sh"
 importLib "lib/lib-helpify.sh"
 importLib "lib/lib-messages.sh"
 
-importLib "lib/lib-command.sh"
+importLib "lib/lib-services.sh"
+importLib "lib/lib-commands.sh"
+
 
 # -----------------------------------------------------------------------------
 # Helpers
@@ -65,7 +67,7 @@ usage () {
   usageCommands
 
   #
-  usageServicesCommands
+  usageSubDirsCommands
 }
 
 usageService () {
@@ -109,8 +111,8 @@ while [[ $# -gt 0 ]]; do
         # shellcheck source=bin
         source "${COMMANDS_DIR}/$1";
         exit 0;
-      # otherwise, check if is a valid service
-      elif isServiceCommand "$1"; then
+      # otherwise, check if is a valid sub-command
+      elif isSubCommand "$1"; then
         # check if there is a second argument
         if [[ $# -gt 1 ]]; then
           # if is a valid command, run it

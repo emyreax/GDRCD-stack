@@ -16,6 +16,11 @@ fi
 # Add lib-core.sh to the list of imported files
 PROCESS_SOURCE=("$LIB_NAME")
 
+# ---------------------------------------------------------------------
+# Variables
+# ---------------------------------------------------------------------
+
+CORE_HANDLER=("service")
 
 # ---------------------------------------------------------------------
 # Commands
@@ -32,10 +37,11 @@ isCommand() {
 }
 
 # check if is a service command
-isServiceCommand() {
-  # check if is a valid service
-  if [[ ! "${SERVICES_VARIANTS[*]}" =~ $1 ]]; then
-    return 1
+isSubCommand() {
+  # check if is a valid service or handler
+    # check if is a valid service or a handler
+  if [[ ! "${SERVICES[*]}" =~ $1 ]] && [[ ! "${CORE_HANDLER[*]}" =~ $1 ]]; then
+    return 1;
   fi
 
   # check if exist directory
@@ -92,38 +98,42 @@ usageCommands () {
   done
 }
 
-# Show commands for services
-usageServicesCommands () {
+# Show commands for sub-directories
+usageSubDirsCommands () {
   # scan bin sub-directories for commands
-  for serviceDir in "${COMMANDS_DIR}"/*; do
-    # get directory name
-    service="$(basename "${serviceDir}")"
-    # do usageServiceCommands, but if it fails, continue
-    usageServiceCommands "${service}" || continue
+  for subCommandDir in "${COMMANDS_DIR}"/*; do
+    subCommand="$(basename "${subCommandDir}")"
+    usageSubDirCommands "${subCommand}" || continue
   done
 }
 
-usageServiceCommands () {
+# Show commands for a sub-directory
+usageSubDirCommands () {
   # get service name and directory
-  local service="${1}"
-  local serviceDir="${COMMANDS_DIR}/${service}"
+  local subCommand="${1}"
+  local subDirCommand="${COMMANDS_DIR}/${subCommand}"
 
+  # check if is a valid service or a handler
+  if [[ ! "${SERVICES[*]}" =~ $subCommand ]] && [[ ! "${CORE_HANDLER[*]}" =~ $subCommand ]]; then
+    return 1;
+  fi
 
   # skip non-directories
-  if [[ ! -d "${serviceDir}" ]]; then
+  if [[ ! -d "${subDirCommand}" ]]; then
     return 1;
   fi
 
   # check if directory containains at least one command
-  if ! hasCommands "${serviceDir}"; then
+  if ! hasCommands "${subDirCommand}"; then
     return 1;
   fi
 
   # show title
-  echo; helpify_subcommand_title "gdrcd-stack ${service}" "" "[OPTIONS...] COMMAND [OPTIONS...]";
+  local command_name="$(basename "${0}")"
+  echo; helpify_subcommand_title "${command_name} ${subCommand}" "" "[OPTIONS...] COMMAND [OPTIONS...]";
 
   # scan bin sub-directories for commands
-  for command in "${serviceDir}"/*; do
+  for command in "${subDirCommand}"/*; do
     # skip non-executable files
     if [[ ! -x "${command}" ]]; then
       return 1;
@@ -148,7 +158,7 @@ usageServiceCommands () {
 messageUnknownCommand () {
   # show error
   prompt -e "Unknown argument: $2";
-  prompt -i "Try './gdrcd-stack $1 --help' for more information.";
+  prompt -i "Try './run $1 --help' for more information.";
 }
 
 # ---------------------------------------------------------------------
@@ -159,19 +169,19 @@ messageUnknownCommand () {
 finalize_argument_parsing() {
   # if has_any_error is true, exit with error code
   if [[ "${has_any_error}" == "true" ]]; then
-    prompt -i "Try './gdrcd-stack --help' for more information."; exit 1
+    prompt -i "Try './run --help' for more information."; exit 1
   fi
 
   if [[ "${need_help}" == "true" ]]; then
     # Force to stop the script
     forceStop="true"
 
-    # HELP > gdrcd-stack
-    if [[ "${need_usage4help}" == "true" && "${1}" != "gdrcd-stack" ]]; then
+    # HELP > stack
+    if [[ "${need_usage4help}" == "true" && "${1}" != "run" ]]; then
       usage4help;
       # Continue the script execution
       forceStop="false"
-    # HELP > gdrcd-stack > Command
+    # HELP > stack > Command
     else
       usage;
     fi

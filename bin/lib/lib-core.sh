@@ -44,9 +44,6 @@ need_help="false"
 need_usage4help="false"
 has_any_error="false"
 
-# ------------Services--------------#
-SERVICES_VARIANTS=("webserver" "database")
-
 # ---------------------------------------------------------------------
 # Utilities
 # ---------------------------------------------------------------------
@@ -62,7 +59,7 @@ checkVersion() {
 
   # Check if the version is the latest check last release on github
   local latest_version
-  latest_version=$(curl -s "https://github.com/GDRCD/GDRCD-stack/releases" | grep -o "v[0-9]*\.[0-9]*\.[0-9]*" | head -n 1 | tr -d 'v')
+  latest_version=$(curl -s "https://github.com/GDRCD/stack/releases" | grep -o "v[0-9]*\.[0-9]*\.[0-9]*" | head -n 1 | tr -d 'v')
 
   # Remove the point from the version and compare the two versions
   if [[ "${version//./}" -lt "${latest_version//./}" ]]; then

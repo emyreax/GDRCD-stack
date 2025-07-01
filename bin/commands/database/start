@@ -8,10 +8,14 @@ importLib "lib/lib-docker.sh"
 
 # Get current file name
 CURRENT_FILE_NAME="$(basename "${BASH_SOURCE[0]}")"
+# Get directory name
+CURRENT_DIR_NAME="$(basename "$(dirname "${BASH_SOURCE[0]}")")"
 
 # Save command name
 args=("$@")
-COMMAND_NAME="${args[0]}"
+# Set service name by arguments or by current directory name
+SERVICE_NAME="${args[0]}"
+COMMAND_NAME="${args[1]}"
 
 # ---------------------------------------------------------------------
 # Helpers
@@ -19,15 +23,15 @@ COMMAND_NAME="${args[0]}"
 
 # Function for showing usage of this command
 usage() {
-  helpify_title "clean"
-  helpify_subtitle "Remove all containers"; echo;
+  helpify_title "${SERVICE_NAME:-${CURRENT_DIR_NAME}} start" "[OPTIONS...]"
+  helpify_subtitle "Start ${SERVICE_NAME:-${CURRENT_DIR_NAME}} container"; echo;
   helpify_subtitle "OPTIONS:"
   helpify "-h, --help"          "Show this help"
 }
 
 # Function for showing usage of this command for help
 usage4help() {
-  helpify "clean"       "Remove all containers"
+  helpify "start"       "Start ${SERVICE_NAME:-${CURRENT_DIR_NAME}} container"
 }
 
 # ---------------------------------------------------------------------
@@ -39,7 +43,7 @@ usage4help() {
 # Parse arguments
 while [[ $# -gt 0 ]]; do
   # if the argument is the command name, skip it
-  if [[ "$1" == "${COMMAND_NAME}" ]]; then
+  if [[ "$1" == "${COMMAND_NAME}" || "$1" == "${SERVICE_NAME}" ]]; then
     shift; continue
   fi
 
@@ -48,7 +52,7 @@ while [[ $# -gt 0 ]]; do
     -h|--help)
       need_help="true"; shift ;;
     *)
-      messageUnknownCommand "$COMMAND_NAME" "$1"; exit 1;;
+      messageUnknownCommand "${SERVICE_NAME:-${CURRENT_DIR_NAME}} ${COMMAND_NAME}" "$1"; exit 1;;
   esac
 done
 
@@ -57,15 +61,15 @@ finalize_argument_parsing
 
 #---------------------------RUN COMMAND-------------------------------#
 
-clean() {
+start() {
   # Preliminary checks
-  isContainerExist
+  isContainerExist "${SERVICE_NAME}"
   #
-  prompt -i "Cleaning all stack stuff..."
-  dockerCompose rm -s -f;
+  prompt -i "Starting ${SERVICE_NAME} container..."
+  dockerCompose start "${SERVICE_NAME}"
 }
 
 # Run command if this file is the command file
 if [[ "${COMMAND_NAME}" == "${CURRENT_FILE_NAME}" ]]; then
-  clean
+  start
 fi
