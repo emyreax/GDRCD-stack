@@ -1,40 +1,35 @@
     # Create image based on the official PHP-FMP image
-FROM php:5.6-fpm-stretch AS base-stage
+FROM php:5.6-fpm-alpine AS base-stage
 
 # Arguments defined in docker-compose.yml
 ARG uid
 
 # Update the base libraries
-RUN apt-get -y update --fix-missing && apt-get upgrade -y
+RUN apk update && apk upgrade
 
 # Install useful tools and install important libaries
-RUN apt-get -y --no-install-recommends install --fix-missing \
-    git nano wget dialog \
-    apt-utils build-essential \
+RUN apk add --no-cache \
+    git nano wget dialog bash \
+    build-base \
     zip openssl curl \
-    libmcrypt4 \
-    libvpx4 \
-    libfreetype6 \
-    libjpeg62-turbo \
-    libpng16-16 \
-    libxpm4 \
-    libsqlite3-dev \
-    libsqlite3-0 \
-    mysql-client \
-    libmcrypt-dev \
-    zlib1g-dev \
-    libzip-dev \
-    libicu-dev \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libxpm-dev \
+    libmcrypt libmcrypt-dev\
+    libvpx \
+    gettext gettext-dev \
+    freetype freetype-dev \
+    libjpeg-turbo libjpeg-turbo-dev \
+    libpng libpng-dev \
+    libxpm libxpm-dev\
     libvpx-dev \
-    libonig-dev \
-    libcurl3-dev \
-    libcurl3-openssl-dev \
-    libmemcached-dev \
-    zlib1g-dev
+    sqlite-dev \
+    mariadb-client \
+    zlib-dev \
+    libzip-dev \
+    icu-dev \
+    libwebp-dev \
+    oniguruma-dev \
+    curl-dev \
+    libmemcached-dev
+
 
 # Other PHP5.6 Extensions
 RUN echo "Installing PHP extensions" && \
@@ -60,22 +55,24 @@ RUN echo "Enabling PHP extensions" && \
     docker-php-ext-enable zip
 
 # Install intl extension
-RUN echo "Install PHP Intl" \
-    && docker-php-ext-configure intl \
-    && docker-php-ext-install -j$(nproc) intl \
-    && docker-php-ext-enable intl \
-    && rm -rf /tmp/*
+RUN docker-php-ext-configure intl \
+    && docker-php-ext-install intl
 
 # Install sendmailer for Mailhog
 RUN  curl --location --output /usr/local/bin/mhsendmail https://github.com/mailhog/mhsendmail/releases/download/v0.2.0/mhsendmail_linux_amd64  \
      && chmod +x /usr/local/bin/mhsendmail
 
 # Clean up, try to reduce image size
-RUN apt-get remove -y libmcrypt-dev libicu-dev libpng-dev libjpeg-dev libfreetype6-dev libxpm-dev libvpx-dev gcc gcc-6 \
-  && apt-get autoremove -y \
-  && apt-get clean all \
-  && rm -rf /var/lib/apt/lists/* \
-  && rm -rf /tmp/*
+RUN apk del \
+    libmcrypt \
+    libpng \
+    libjpeg-turbo \
+    freetype \
+    libxpm \
+    libvpx \
+    build-base \
+ && rm -rf /var/cache/apk/* \
+ && rm -rf /tmp/*
 
 # -------------------------------------------------------
 # SERVE STAGE
@@ -88,24 +85,18 @@ FROM base-stage AS serve-stage
 ARG uid
 
 # Install serve dependencies
-RUN apt-get update \
-    && apt-get upgrade -y \
-    && apt-get -y --no-install-recommends install \
+RUN apk update && apk add --no-cache \
     nginx \
-    memcached \
-    ssl-cert
+    memcached
+
+RUN mkdir -p /run/nginx
 
 # Clean up, try to reduce image size
-RUN apt-get autoremove -y \
-    && apt-get clean all \
-    && rm -rf /var/lib/apt/lists/* \
+RUN rm -rf /var/cache/apk/* \
     && rm -rf /tmp/*
 
-# Generate ssl certificate
-RUN make-ssl-cert generate-default-snakeoil --force-overwrite
-
 # Copy nginx config
-COPY .docker/services/webserver/config/sites-available/default.nginx /etc/nginx/sites-available/default
+COPY .docker/services/webserver/config/sites-available/default.nginx /etc/nginx/conf.d/default.conf
 
 # Copy entrypoint
 COPY .docker/services/webserver/entrypoint.sh /usr/local/bin/

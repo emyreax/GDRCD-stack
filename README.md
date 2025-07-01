@@ -41,7 +41,7 @@ A questo punto, copiare il file [`sample.env`](sample.env ) in un nuovo file [`.
 
 Di seguito le versioni attualmente supportate, con i relativi riferimenti:
 - PHP 5.6 (php56)
-- PHP 7.4 (php74)
+- PHP 7.3 (php73)
 - PHP 8.0 (php8)
 
 > N.B.: Puoi cambiare la versione PHP utilizzata in qualsiasi momento, cambiando la variabile nel file [`.env`](.env )  e ricostruendo lo stack.
@@ -108,7 +108,7 @@ Le seguenti variabili possono essere configurate nel file `.env`:
 ### Configurazione PHP
 | Variabile | Descrizione | Valore Esempio |
 |-----------|-------------|----------------|
-| `PHP_VERSION` | Versione di PHP da utilizzare | `php74` |
+| `PHP_VERSION` | Versione di PHP da utilizzare | `php73` |
 | `PHP_UID` | ID utente per i processi PHP (www-data) | `1000` |
 
 #### Configurazione Database
@@ -373,7 +373,7 @@ Accede alla shell del container `mailhog`.
 
 Lo stack mette a disposizione una serie di servizi, che sono:
 - Web Server (nginx)
-- PHP (php56, php74, php8)
+- PHP (php56, php73, php8)
 - MySQL (mysql5.7)
 - PhpMyAdmin (phpmyadmin)
 - Mailhog (mailhog)

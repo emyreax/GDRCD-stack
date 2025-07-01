@@ -3,38 +3,31 @@
 # -------------------------------------------------------
 
 # Create image based on the official PHP-FMP image
-FROM php:7.4-fpm-buster AS base-stage
+FROM php:7.3-fpm-alpine AS base-stage
 
 # Update the base libraries
-RUN apt-get -y update --fix-missing && apt-get upgrade -y
+RUN apk update && apk upgrade
 
 # Install useful tools and install important libaries
-RUN apt-get -y --no-install-recommends install --fix-missing \
-    git nano wget dialog \
-    apt-utils build-essential \
+RUN apk add --no-cache \
+    git nano wget dialog bash \
+    build-base \
     zip openssl curl \
-    libmcrypt4 \
-    libfreetype6 \
-    libjpeg62-turbo \
-    libpng16-16 \
-    libxpm4 \
-    libsqlite3-dev \
-    libsqlite3-0 \
-    default-mysql-client \
-    libmcrypt-dev \
-    zlib1g-dev \
+    gettext gettext-dev \
+    libmcrypt libmcrypt-dev \
+    freetype freetype-dev \
+    libjpeg-turbo libjpeg-turbo-dev \
+    libpng \
+    libxpm \
+    sqlite-dev \
+    mariadb-client \
     libzip-dev \
-    libicu-dev \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libxpm-dev \
+    icu-dev \
     libvpx-dev \
-    libonig-dev \
-    libcurl3-dev \
-    libcurl3-openssl-dev \
+    oniguruma-dev \
+    curl-dev \
     libmemcached-dev \
-    zlib1g-dev
+    zlib-dev
 
 # Other PHP Extensions
 RUN echo "Installing PHP extensions" && \
@@ -48,7 +41,7 @@ RUN echo "Installing PHP extensions" && \
     mbstring \
     gettext \
     opcache && \
-    docker-php-ext-configure gd --with-freetype=/usr/include --with-jpeg=/usr/include && \
+    docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include && \
     docker-php-ext-install gd
 
 # Other PHP Extensions
@@ -67,11 +60,16 @@ RUN  curl --location --output /usr/local/bin/mhsendmail https://github.com/mailh
      && chmod +x /usr/local/bin/mhsendmail
 
 # Clean up, try to reduce image size
-RUN apt-get remove -y libmcrypt-dev libicu-dev libpng-dev libjpeg-dev libfreetype6-dev libxpm-dev libvpx-dev gcc \
-  && apt-get autoremove -y \
-  && apt-get clean all \
-  && rm -rf /var/lib/apt/lists/* \
-  && rm -rf /tmp/*
+RUN apk del \
+    libmcrypt \
+    libpng \
+    libjpeg-turbo \
+    freetype \
+    libxpm \
+    libvpx \
+    build-base \
+ && rm -rf /var/cache/apk/* \
+ && rm -rf /tmp/*
 
 # -------------------------------------------------------
 # SERVE STAGE
@@ -84,24 +82,16 @@ FROM base-stage AS serve-stage
 ARG uid
 
 # Install serve dependencies
-RUN apt-get update \
-    && apt-get upgrade -y \
-    && apt-get -y --no-install-recommends install \
+RUN apk update && apk add --no-cache \
     nginx \
-    memcached \
-    ssl-cert
+    memcached
 
 # Clean up, try to reduce image size
-RUN apt-get autoremove -y \
-    && apt-get clean all \
-    && rm -rf /var/lib/apt/lists/* \
+RUN rm -rf /var/cache/apk/* \
     && rm -rf /tmp/*
 
-# Generate ssl certificate
-RUN make-ssl-cert generate-default-snakeoil --force-overwrite
-
 # Copy nginx config
-COPY .docker/services/webserver/config/sites-available/default.nginx /etc/nginx/sites-available/default
+COPY .docker/services/webserver/config/sites-available/default.nginx /etc/nginx/http.d/default.conf
 
 # Copy entrypoint
 COPY .docker/services/webserver/entrypoint.sh /usr/local/bin/
