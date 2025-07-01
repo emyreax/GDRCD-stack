@@ -3,7 +3,7 @@
 # -------------------------------------------------------
 
 # Create image based on the official PHP-FMP image
-FROM php:7.4-fpm-alpine AS base-stage
+FROM php:7.3-fpm-alpine AS base-stage
 
 # Update the base libraries
 RUN apk update && apk upgrade
@@ -41,7 +41,7 @@ RUN echo "Installing PHP extensions" && \
     mbstring \
     gettext \
     opcache && \
-    docker-php-ext-configure gd --with-freetype=/usr/include --with-jpeg=/usr/include && \
+    docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include && \
     docker-php-ext-install gd
 
 # Other PHP Extensions
